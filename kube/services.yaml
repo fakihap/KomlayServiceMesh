@@ -1,0 +1,149 @@
+####################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: grand-oak
+  labels:
+    app: grand-oak
+    service: grand-oak
+spec:
+  ports:
+  - port: 5000
+    name: http
+  selector:
+    app: grand-oak
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: komlay-grand-oak
+  labels:
+    account: grand-oak
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grand-oak-v1
+  labels:
+    app: grand-oak
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grand-oak
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: grand-oak
+        version: v1
+    spec:
+      serviceAccountName: komlay-grand-oak
+      containers:
+      - name: grand-oak
+        image: docker.io/library/grand-oak:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5000
+---
+####################################################################################
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pine-valley
+  labels:
+    app: pine-valley
+    service: pine-valley
+spec:
+  ports:
+  - port: 9090
+    name: http
+  selector:
+    app: pine-valley
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: komlay-pine-valley
+  labels:
+    account: pine-valley
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pine-valley-v1
+  labels:
+    app: pine-valley
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pine-valley
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: pine-valley
+        version: v1
+    spec:
+      serviceAccountName: komlay-pine-valley
+      containers:
+      - name: pine-valley
+        image: docker.io/library/pine-valley:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9090
+---
+####################################################################################
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: booking-service
+  labels:
+    app: booking-service
+    service: booking-service
+spec:
+  ports:
+  - port: 8080
+    name: http
+  selector:
+    app: booking-service
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: komlay-booking-service
+  labels:
+    account: booking-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: booking-service-v1
+  labels:
+    app: booking-service
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: booking-service
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: booking-service
+        version: v1
+    spec:
+      serviceAccountName: komlay-booking-service
+      containers:
+      - name: booking-service
+        image: docker.io/library/booking-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+---
