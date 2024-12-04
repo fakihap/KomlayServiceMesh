@@ -39,6 +39,8 @@ for other ways to do this, check here https://minikube.sigs.k8s.io/docs/handbook
 
 >tips: when you are trying to overwrite an already-loaded image, you can check if `minikube image load` succeed by comparing the `IMAGE ID` from `docker image ls` and `minikube image ls --format='table'`
 
+> tips: if you are unable to do overwriting load for the correct IMAGE, you can check for running k8s deployments which may currently use the image. 
+
 ### 2. Minikube
 refer to https://minikube.sigs.k8s.io/docs/start/?arch=%2Fwindows%2Fx86-64%2Fstable%2F.exe+download
 1. Install Minikube on your platform

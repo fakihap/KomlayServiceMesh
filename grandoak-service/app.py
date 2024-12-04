@@ -7,7 +7,7 @@ app = Flask(__name__)
 api = Api(app)
 fake = Faker()
 
-nData = 10
+nData = 5
 doctorList = {}
 doctorType = ["surgeon", "dentist", "neurosurgeon"]
 

@@ -34,10 +34,8 @@ func fetchDoctors(c *gin.Context) {
 
     // pine-valley
     _, pineValleyBody, _ := request.Post(pineValleyURL).
-        Send(`{"doctorType": "cardiologist"}`).
+        Send(`{"doctorType": "` + c.Param("doctorType") + `"}`).
         End()
-
-    // fmt.Printf("%s --- %s \n", grandOakBody, pineValleyBody)
 
 	var outGrandOak DoctorsList
     var outPineValley DoctorsList
