@@ -34,7 +34,9 @@ minikube image load grand-oak
 minikube image load pine-valley
 ```
 
-other ways to do, check here https://minikube.sigs.k8s.io/docs/handbook/pushing/
+for other ways to do this, check here https://minikube.sigs.k8s.io/docs/handbook/pushing/
+
+>tips: when you are trying to overwrite an already-loaded image, you can check if `minikube image load` succeed by comparing the `IMAGE ID` from `docker image ls` and `minikube image ls --format='table'`
 
 ### Minikube
 refer to https://minikube.sigs.k8s.io/docs/start/?arch=%2Fwindows%2Fx86-64%2Fstable%2F.exe+download
