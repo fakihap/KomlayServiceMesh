@@ -1,0 +1,41 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: komlay-gateway
+spec:
+  gatewayClassName: istio
+  listeners:
+  - name: http
+    port: 80
+    protocol: HTTP
+    allowedRoutes:
+      namespaces:
+        from: Same
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: komlay
+spec:
+  parentRefs:
+  - name: komlay-gateway
+  rules:
+  - matches:
+    - path:
+        type: Exact
+        value: /productpage
+    - path:
+        type: PathPrefix
+        value: /doctors
+    - path:
+        type: Exact
+        value: /p
+    - path:
+        type: Exact
+        value: /g
+    - path:
+        type: Exact
+        value: /ping 
+    backendRefs:
+    - name: booking-service
+      port: 8080
