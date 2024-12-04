@@ -3,14 +3,16 @@ package main
 import "github.com/gin-gonic/gin"
 import "github.com/parnurzeal/gorequest"
 
-// import "encoding/json"
-import "fmt"
-// import "slices"
+import "encoding/json"
+// import "fmt"
+import "slices"
 
 
+// if services were to be exposed outside cni
 // var grandOakURL = "http://localhost:5000/grandOak/doctors/"
 // var pineValleyURL = "http://localhost:9090/pineValley/doctors"
 
+// kubernetes cni
 var grandOakURL = "http://grand-oak:5000/grandOak/doctors/"
 var pineValleyURL = "http://pine-valley:9090/pineValley/doctors"
 
@@ -35,28 +37,30 @@ func fetchDoctors(c *gin.Context) {
         Send(`{"doctorType": "cardiologist"}`).
         End()
 
-    fmt.Printf("%s --- %s \n", grandOakBody, pineValleyBody)
+    // fmt.Printf("%s --- %s \n", grandOakBody, pineValleyBody)
 
-	// var outGrandOak DoctorsList
-    // var outPineValley DoctorsList
+	var outGrandOak DoctorsList
+    var outPineValley DoctorsList
 
-	// err1 := json.Unmarshal([]byte(grandOakBody), &outGrandOak)
-	// if err1 != nil {
-    //     fmt.Println(err1.Error())
-    //     return
-    // }	
+	err1 := json.Unmarshal([]byte(grandOakBody), &outGrandOak)
+	if err1 != nil {
+        // fmt.Println(err1.Error())
 
-    // err2 := json.Unmarshal([]byte(pineValleyBody), &outPineValley)
-	// if err2 != nil {
-    //     fmt.Println(err2.Error())
-    //     return
-    // }	
+        c.JSON(500, "error unmarshalling")
+        return
+    }	
 
-    // var out DoctorsList
-    // out.Doctors.Doctor = slices.Concat(outGrandOak.Doctors.Doctor, outPineValley.Doctors.Doctor)
+    err2 := json.Unmarshal([]byte(pineValleyBody), &outPineValley)
+	if err2 != nil {
+        // fmt.Println(err2.Error())
 
+        c.JSON(500, "error unmarshalling")
+        return
+    }	
 
-    out := grandOakBody + " --- " + pineValleyBody
+    var out DoctorsList
+    out.Doctors.Doctor = slices.Concat(outGrandOak.Doctors.Doctor, outPineValley.Doctors.Doctor)
+
     c.JSON(200, out)
 }
 
@@ -102,31 +106,3 @@ func main() {
 
     r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
-
-
-
-
-// func fetchDoctors() ([]doctor, error) {
-// 	var err error
-//     var client = &http.Client{}
-//     var data []doctor
-
-//     request, err := http.NewRequest("GET", baseURL+"/users", nil)
-//     if err != nil {
-//         return nil, err
-//     }
-
-//     response, err := client.Do(request)
-//     if err != nil {
-//         return nil, err
-//     }
-//     defer response.Body.Close()
-
-//     err = json.NewDecoder(response.Body).Decode(&data)
-//     if err != nil {
-//         return nil, err
-//     }
-
-//     return data,nil
-
-// }
