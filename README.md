@@ -1,6 +1,8 @@
 # KomlayServiceMesh
 Service mesh orchestration for adapting service endpoints of Grand Oak Hospital and Pine Valley Hospital into a single endpoint using [istio](https://istio.io)🚢 on [minikube](https://minikube.sigs.k8s.io/)⚓
 
+![architecture](readme/service%20mesh%20architecture.jpg)
+
 ## Service Mesh Orchestration - Tutorial 🚀
 adapted from
 > https://kubernetes.io/docs/tutorials/hello-minikube/
@@ -70,6 +72,8 @@ refer to https://istio.io/latest/docs/setup/getting-started/#gateway-api
 kubectl apply -f kube/services.yaml    
 ```
 
+![pods](readme/running-pods.jpg)
+
 ### 7. Open the app to outside traffic
 1. Create Kubernetes Gateway
 ```sh
@@ -86,3 +90,48 @@ kubectl annotate gateway komlay-gateway networking.istio.io/service-type=Cluster
 kubectl port-forward svc/komlay-gateway-istio 8080:80   
 ```
 now, you can access the exposed API from `localhost:8080`
+
+## Visualization of the Service Mesh 
+using istio kiali dashboard we can make a correct mesh representation for our service mesh
+
+![viz](readme/kiali-service-mesh-viz.jpg)
+
+
+## Endpoints
+### Doctors List
+Endpoints for Doctors List for both hospital booking service
+Available doctor types being `surgeon`, `dentist`, and `neurosurgeon`
+```url
+http://localhost:8080/doctors/<doctorType>
+```
+
+1. `Surgeon`
+
+![surgeon](readme/surgeon.jpg)
+
+2. `Dentist`
+
+![dentist](readme/dentist.jpg)
+
+3. `Neurosurgeon`
+
+![neurosurgeon](readme/neurosurgeon.jpg)
+
+### Ping
+check this service health by doing a simple ping
+```url
+http://localhost:8080/ping
+```
+
+### Health Check
+check each hospital API health by doing a simple doctor list call
+
+Grand Oak Service
+```url
+http://localhost:8080/g
+```
+
+Pine Valley Service
+```url
+http://localhost:8080/p
+```
