@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pine-valley-aggregator-config
+  labels:
+    aggregatorVersion: v1
+    app: pine-valley
+    version: v1
+data:
+  port: "9090"
+  request_target: "/pineValley/doctors"
+  request_body: |
+    {
+      "doctorType": "<doctor_type>"
+    }
+  method: "POST"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: pine-valley-envoy-filter
+  namespace: default
+spec:
+  workloadSelector:
+    labels:
+      app: pine-valley
+      version: v1
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: SIDECAR_INBOUND
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.http.lua
+          typed_config:
+            '@type': type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+            inlineCode: |
+              local json = require("json")
+
+              function envoy_on_response(response_handle)
+                response_handle:logWarn("Hello Response!")
+                local response_body = response_handle:body():getBytes(0, response_handle:body():length())
+
+                local doctors = json.decode(response_body)
+                for _, doctor in ipairs(doctors.doctors.doctor) do
+                  doctor.hospital = "Pine Valley Hospital"
+                end
+
+                local response_object = { doctors = doctors.doctors.doctor}
+
+                local response_json = json.encode(response_object)
+                response_handle:body():setBytes(response_json)
+                
+                
+              end 

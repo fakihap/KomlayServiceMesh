@@ -1,41 +1,57 @@
-apiVersion: gateway.networking.k8s.io/v1
+apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
   name: komlay-gateway
 spec:
-  gatewayClassName: istio
-  listeners:
-  - name: http
-    port: 80
-    protocol: HTTP
-    allowedRoutes:
-      namespaces:
-        from: Same
+  selector:
+    istio: ingressgateway  # Selects the Istio ingress gateway by default
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"  # Allows any host to access the gateway
 ---
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
 metadata:
   name: komlay
 spec:
-  parentRefs:
-  - name: komlay-gateway
-  rules:
-  - matches:
-    - path:
-        type: Exact
-        value: /productpage
-    - path:
-        type: PathPrefix
-        value: /doctors
-    - path:
-        type: Exact
-        value: /p
-    - path:
-        type: Exact
-        value: /g
-    - path:
-        type: Exact
-        value: /ping 
-    backendRefs:
-    - name: booking-service
-      port: 8080
+  hosts:
+  - "*"  # Defines the virtual hosts
+  gateways:
+  - komlay-gateway  # Refers to the Gateway that this VirtualService will use
+  http:
+  - match:
+    - uri:
+        exact: /productpage
+    - uri:
+        prefix: /doctors
+    - uri:
+        exact: /p
+    - uri:
+        exact: /g
+    - uri:
+        exact: /ping
+    route:
+    - destination:
+        host: booking-service
+        port:
+          number: 8080
+  - match:
+    - uri:
+        prefix: /grandOak/doctors
+    route:
+    - destination:
+        host: grand-oak
+        port:
+          number: 5000
+  - match:
+    - uri:
+        prefix: /pineValley/doctors
+    route:
+    - destination:
+        host: pine-valley
+        port:
+          number: 9090

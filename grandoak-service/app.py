@@ -17,13 +17,10 @@ for type in doctorType:
         data = {}
         data['name'] = fake.name()
         data['time'] = fake.time()
-        data['hospital'] = 'Grand Oak'
         doctors.append(data)
 
     doctorList[type] = {
-        "doctors": {
-            "doctor": doctors
-        }
+        "our_doctors": doctors
     }
 
 class Doctors(Resource):

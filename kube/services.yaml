@@ -46,6 +46,19 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 5000
+      - name: istio-proxy
+        image: docker.io/istio/proxyv2:1.24.0
+        env:
+        - name: LUA_PATH
+          value: /etc/lua/?.lua
+        volumeMounts:
+        - name: lua-volume
+          mountPath: /etc/lua/
+      volumes:
+      - name: lua-volume
+        configMap:
+          name: json-lua
+      
 ---
 ####################################################################################
 ---
@@ -96,6 +109,18 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9090
+      - name: istio-proxy
+        image: docker.io/istio/proxyv2:1.24.0
+        env:
+        - name: LUA_PATH
+          value: /etc/lua/?.lua
+        volumeMounts:
+        - name: lua-volume
+          mountPath: /etc/lua/
+      volumes:
+      - name: lua-volume
+        configMap:
+          name: json-lua
 ---
 ####################################################################################
 ---
@@ -146,4 +171,16 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
+      - name: istio-proxy
+        image: docker.io/istio/proxyv2:1.24.0
+        env:
+        - name: LUA_PATH
+          value: /etc/lua/?.lua
+        volumeMounts:
+        - name: lua-volume
+          mountPath: /etc/lua/
+      volumes:
+      - name: lua-volume
+        configMap:
+          name: json-lua
 ---

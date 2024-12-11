@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grand-oak-aggregator-config
+  labels:
+    aggregatorVersion: v1
+    app: grand-oak
+    version: v1
+data:
+  port: "5000"
+  request_target: "/grandOak/doctors/<doctor_type>"
+  method: "GET"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: grand-oak-envoy-filter
+  namespace: default
+spec:
+  workloadSelector:
+    labels:
+      app: grand-oak
+      version: v1
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: SIDECAR_INBOUND
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.http.lua
+          typed_config:
+            '@type': type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+            inlineCode: |
+              local json = require("json")
+
+              function envoy_on_response(response_handle)
+                response_handle:logWarn("Hello Response!")
+                local response_body = response_handle:body():getBytes(0, response_handle:body():length())
+
+                local doctors = json.decode(response_body)
+                for _, doctor in ipairs(doctors.our_doctors) do
+                  doctor.hospital = "Grand Oak Hospital"
+                end
+
+                local response_object = {doctors = doctors.our_doctors}
+
+                local response_json = json.encode(response_object)
+                response_handle:body():setBytes(response_json)
+                
+                
+              end 
