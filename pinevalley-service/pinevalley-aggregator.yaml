@@ -9,7 +9,7 @@ metadata:
 data:
   port: "9090"
   request_target: "/pineValley/doctors"
-  request_body: |
+  json_request_body: |
     {
       "doctorType": "<doctor_type>"
     }

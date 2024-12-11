@@ -124,6 +124,18 @@ spec:
 ---
 ####################################################################################
 ---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: default
+  name: configmap-reader
+rules:
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch"]
+---
+####################################################################################
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -144,6 +156,20 @@ metadata:
   name: komlay-booking-service
   labels:
     account: booking-service
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: configmap-reader-binding
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: komlay-booking-service
+  namespace: default
+roleRef:
+  kind: Role
+  name: configmap-reader
+  apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: apps/v1
 kind: Deployment

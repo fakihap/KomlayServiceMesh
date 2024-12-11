@@ -75,6 +75,8 @@ const doctorData = {
 
 app.post('/pineValley/doctors', (request, response) => {
     const { doctorType } = request.body;
+
+    console.log(request);
     
     if (!doctorType) {
         return response.status(400).json({
@@ -89,6 +91,8 @@ app.post('/pineValley/doctors', (request, response) => {
             doctor: doctors
         }
     });
+
+    console.log(response);
 });
 
 app.listen(port, () => {
