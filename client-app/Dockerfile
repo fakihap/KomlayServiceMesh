@@ -34,11 +34,9 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm i
+RUN npm ci
 
 COPY . .
-
-COPY node_modules/ node_modules/
 
 EXPOSE 5173
 
