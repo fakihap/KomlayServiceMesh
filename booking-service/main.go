@@ -28,12 +28,14 @@ var clientset = getDefaultKubernetesClient()
 var namespace = "default"
 var aggregatorVersion = "v1"
 
+type Doctor struct {
+	Name     string `json:"name"`
+	Time     string `json:"time"`
+	Hospital string `json:"hospital"`
+}
+
 type DoctorsList struct {
-	Doctors []struct {
-		Name     string `json:"name"`
-		Time     string `json:"time"`
-		Hospital string `json:"hospital"`
-	} `json:"doctors"`
+	Doctors []Doctor `json:"doctors"`
 }
 
 func getDefaultKubernetesClient() *kubernetes.Clientset {
@@ -56,7 +58,9 @@ func fetchDoctors(c *gin.Context) {
 
 	log.Printf("configMaps: %v", configMaps)
 
-	var out DoctorsList
+	out := DoctorsList{
+		Doctors: []Doctor{},
+	}
 	for _, cm := range configMaps {
 		host := cm.Labels["app"]
 		port := cm.Data["port"]
@@ -75,14 +79,21 @@ func fetchDoctors(c *gin.Context) {
 			_, body, _ = request.Post(url).Send(jsonRequestBody).End()
 		}
 
+		log.Println(url)
+		log.Println(body)
+
 		var doctorsList DoctorsList
 		err := json.Unmarshal([]byte(body), &doctorsList)
-		if err != nil {
-			c.JSON(500, "error unmarshalling")
-			return
+		if err == nil {
+			out.Doctors = slices.Concat(out.Doctors, doctorsList.Doctors)
+		} else {
+			log.Println(err.Error())
 		}
+		log.Printf("out: %v\n", out)
+	}
 
-		out.Doctors = slices.Concat(out.Doctors, doctorsList.Doctors)
+	if out.Doctors == nil {
+		out.Doctors = []Doctor{}
 	}
 
 	c.JSON(200, out)
