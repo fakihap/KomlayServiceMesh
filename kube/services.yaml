@@ -221,7 +221,7 @@ metadata:
     service: client-app
 spec:
   ports:
-  - port: 3000
+  - port: 5173
     name: http
   selector:
     app: client-app
@@ -258,5 +258,5 @@ spec:
         image: docker.io/library/client-app:latest
         imagePullPolicy: IfNotPresent
         ports:
-        - containerPort: 3000
+        - containerPort: 5173
 ---
