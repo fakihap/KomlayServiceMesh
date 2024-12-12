@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"slices"
 	"strings"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/parnurzeal/gorequest"
@@ -54,13 +54,14 @@ func getDefaultKubernetesClient() *kubernetes.Clientset {
 
 func fetchDoctors(c *gin.Context) {
 	configMaps := fetchConfigMaps()
-	request := gorequest.New()
 
 	log.Printf("configMaps: %v", configMaps)
 
 	out := DoctorsList{
 		Doctors: []Doctor{},
 	}
+	var wg sync.WaitGroup
+	res := make(chan DoctorsList, len(configMaps))
 	for _, cm := range configMaps {
 		host := cm.Labels["app"]
 		port := cm.Data["port"]
@@ -72,29 +73,42 @@ func fetchDoctors(c *gin.Context) {
 		jsonRequestBody := strings.Replace(jsonRequestBodyTemplate, "<doctor_type>", c.Param("doctorType"), -1)
 		url := fmt.Sprintf("http://%s:%s%s", host, port, requestTarget)
 
-		var body string
-		if method == "GET" {
-			_, body, _ = request.Get(url).End()
-		} else if method == "POST" {
-			_, body, _ = request.Post(url).Send(jsonRequestBody).End()
-		}
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			request := gorequest.New()
 
-		log.Println(url)
-		log.Println(body)
+			var body string
+			if method == "GET" {
+				_, body, _ = request.Get(url).End()
+			} else if method == "POST" {
+				_, body, _ = request.Post(url).Send(jsonRequestBody).End()
+			}
 
-		var doctorsList DoctorsList
-		err := json.Unmarshal([]byte(body), &doctorsList)
-		if err == nil {
-			out.Doctors = slices.Concat(out.Doctors, doctorsList.Doctors)
-		} else {
-			log.Println(err.Error())
-		}
-		log.Printf("out: %v\n", out)
+			log.Println(url)
+			log.Println(body)
+
+			var doctorsList DoctorsList
+			err := json.Unmarshal([]byte(body), &doctorsList)
+			if err == nil {
+				res <- doctorsList
+			} else {
+				res <- DoctorsList{
+					Doctors: []Doctor{},
+				}
+				log.Printf("error: %v\n", err)
+			}
+			log.Printf("doctorsList: %v\n", doctorsList)
+		}()
 	}
 
-	if out.Doctors == nil {
-		out.Doctors = []Doctor{}
+	wg.Wait()
+	close(res)
+
+	for doctorsList := range res {
+		out.Doctors = append(out.Doctors, doctorsList.Doctors...)
 	}
+	log.Printf("out: %v\n", out)
 
 	c.JSON(200, out)
 }
