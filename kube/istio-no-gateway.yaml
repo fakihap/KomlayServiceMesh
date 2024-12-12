@@ -1,3 +1,4 @@
+# LEGACY: no longer needed, will be deleted on next release!
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 spec:

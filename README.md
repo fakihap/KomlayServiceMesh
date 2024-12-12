@@ -29,8 +29,13 @@ cd pinevalley-service/
 docker build -t pine-valley .
 ```
 
+
+
 #### Load the image into minikube registry
 this step is required since `services.yaml` crd refer to this image to be able to create Deployment(s)
+
+> you can only do this after a minikube cluster is started
+
 ```sh
 minikube image load booking-service
 minikube image load grand-oak
@@ -55,9 +60,16 @@ refer to https://istio.io/latest/docs/setup/getting-started/#download
 
 ### 4. Install Istio
 refer to https://istio.io/latest/docs/setup/getting-started/#install
-1. install istio using the no-gateway profile
-    
-    > alternatively, you can use the crd we have in this path "kube/istio-no-gateway.yaml"
+1. install istio using the 'demo' profile
+
+```sh
+    istioctl install --set profile=demo
+```
+
+> alternatively, you can use the crd we have in this path "kube/profile/demo.yaml"
+```sh   
+    istioctl install -f kube/profiles/demo.yaml
+```
 
 2. add namespace label to enable automatic envoy sidecar injection
 ```sh
@@ -67,27 +79,34 @@ kubectl label namespace default istio-injection=enabled
 ### 5. Install the Kubernetes Gateway API CRDs
 refer to https://istio.io/latest/docs/setup/getting-started/#gateway-api
 
-### 6. Deploy the app
+```sh
+kubectl get crd gateways.gateway.networking.k8s.io &> /dev/null || \
+{ kubectl kustomize "github.com/kubernetes-sigs/gateway-api/config/crd?ref=v1.2.0" | kubectl apply -f -; }
+```
+
+### 6. Create config map
+```sh
+kubectl create configmap json-lua --from-file=json.lua
+```
+
+> alternative `kubectl create configmap json-lua --from-file json.lua`
+
+### 7. Deploy the app
 ```sh
 kubectl apply -f kube/services.yaml    
 ```
 
 ![pods](readme/running-pods.jpg)
 
-### 7. Open the app to outside traffic
+### 8. Open the app to outside traffic
 1. Create Kubernetes Gateway
 ```sh
 kubectl apply -f kube/gateways.yaml    
 ```
 
-2. Change the service type to ClusterIP by annotating the gateway
+### 9. Forward the Port
 ```sh
-kubectl annotate gateway komlay-gateway networking.istio.io/service-type=ClusterIP --namespace=default
- ```
-
-### 8. Forward the Port
-```sh
-kubectl port-forward svc/komlay-gateway-istio 8080:80   
+kubectl port-forward svc/istio-ingressgateway 8080:80 -n istio-system
 ```
 now, you can access the exposed API from `localhost:8080`
 
