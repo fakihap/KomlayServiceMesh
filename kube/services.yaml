@@ -210,3 +210,53 @@ spec:
         configMap:
           name: json-lua
 ---
+####################################################################################
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: client-app
+  labels:
+    app: client-app
+    service: client-app
+spec:
+  ports:
+  - port: 3000
+    name: http
+  selector:
+    app: client-app
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: komlay-client-app
+  labels:
+    account: client-app
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client-app-v1
+  labels:
+    app: client-app
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: client-app
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: client-app
+        version: v1
+    spec:
+      serviceAccountName: komlay-client-app
+      containers:
+      - name: client-app
+        image: docker.io/library/client-app:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+---
